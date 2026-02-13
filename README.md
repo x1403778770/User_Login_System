@@ -314,7 +314,3 @@ SELECT * FROM users;
 -- 删除用户后重新注册
 DELETE FROM users WHERE username = 'testuser';
 ```
-
-## 许可证
-
-MIT License
