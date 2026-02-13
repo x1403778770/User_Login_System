@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户登录系统 - 演示</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4a90d9;
+            --success-color: #28a745;
+            --danger-color: #dc3545;
+            --warning-color: #ffc107;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .main-container {
+            max-width: 900px;
+            width: 100%;
+            padding: 20px;
+        }
+        
+        .card {
+            border: none;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+        
+        .card-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-align: center;
+            padding: 30px;
+            border: none;
+        }
+        
+        .card-header h2 {
+            margin: 0;
+            font-weight: 600;
+        }
+        
+        .card-header p {
+            margin: 10px 0 0;
+            opacity: 0.9;
+        }
+        
+        .card-body {
+            padding: 40px;
+        }
+        
+        .tab-content {
+            padding-top: 20px;
+        }
+        
+        .nav-tabs {
+            border: none;
+            justify-content: center;
+        }
+        
+        .nav-tabs .nav-link {
+            border: none;
+            color: #666;
+            font-weight: 500;
+            padding: 15px 40px;
+            border-radius: 10px;
+            margin: 0 5px;
+            transition: all 0.3s;
+        }
+        
+        .nav-tabs .nav-link:hover {
+            background: #f8f9fa;
+        }
+        
+        .nav-tabs .nav-link.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .form-control {
+            border-radius: 10px;
+            padding: 12px 20px;
+            border: 2px solid #e9ecef;
+            transition: all 0.3s;
+        }
+        
+        .form-control:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 10px;
+            padding: 12px 30px;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-danger {
+            border-radius: 10px;
+            padding: 12px 30px;
+        }
+        
+        .alert {
+            border-radius: 10px;
+            border: none;
+        }
+        
+        .status-panel {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .user-avatar {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+        }
+        
+        .api-log {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            border-radius: 10px;
+            padding: 15px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 13px;
+        }
+        
+        .api-log .success {
+            color: #4ec9b0;
+        }
+        
+        .api-log .error {
+            color: #f14c4c;
+        }
+        
+        .api-log .info {
+            color: #6a9955;
+        }
+        
+        .api-log .timestamp {
+            color: #6a9955;
+        }
+        
+        .password-requirements {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        .password-requirements ul {
+            margin: 5px 0 0;
+            padding-left: 20px;
+        }
+        
+        .requirement-met {
+            color: var(--success-color);
+        }
+        
+        .requirement-not-met {
+            color: #999;
+        }
+        
+        .feature-list {
+            margin-top: 30px;
+        }
+        
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 0;
+        }
+        
+        .feature-item i {
+            color: var(--success-color);
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <div class="card">
+            <div class="card-header">
+                <h2><i class="bi bi-shield-lock"></i> 用户登录系统</h2>
+                <p>基于 Redis + MySQL 的会话管理系统演示</p>
+            </div>
+            <div class="card-body">
+                <!-- 未登录状态 -->
+                <div id="authSection">
+                    <ul class="nav nav-tabs" role="tablist">
+                        <li class="nav-item">
+                            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#login" type="button">
+                                <i class="bi bi-box-arrow-in-right"></i> 登录
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#register" type="button">
+                                <i class="bi bi-person-plus"></i> 注册
+                            </button>
+                        </li>
+                    </ul>
+                    
+                    <div class="tab-content">
+                        <!-- 登录表单 -->
+                        <div class="tab-pane fade show active" id="login">
+                            <form id="loginForm">
+                                <div class="mb-3">
+                                    <label class="form-label">用户名</label>
+                                    <input type="text" class="form-control" id="loginUsername" placeholder="请输入用户名" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">密码</label>
+                                    <input type="password" class="form-control" id="loginPassword" placeholder="请输入密码" required>
+                                </div>
+                                <div id="loginMessage"></div>
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="bi bi-box-arrow-in-right"></i> 登录
+                                </button>
+                            </form>
+                        </div>
+                        
+                        <!-- 注册表单 -->
+                        <div class="tab-pane fade" id="register">
+                            <form id="registerForm">
+                                <div class="mb-3">
+                                    <label class="form-label">用户名</label>
+                                    <input type="text" class="form-control" id="regUsername" placeholder="3-20个字符，字母数字下划线" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">密码</label>
+                                    <input type="password" class="form-control" id="regPassword" placeholder="请输入密码" required>
+                                    <div class="password-requirements">
+                                        <ul>
+                                            <li id="req-length">至少8个字符</li>
+                                            <li id="req-lower">包含小写字母</li>
+                                            <li id="req-upper">包含大写字母</li>
+                                            <li id="req-number">包含数字</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">邮箱（可选）</label>
+                                    <input type="email" class="form-control" id="regEmail" placeholder="请输入邮箱">
+                                </div>
+                                <div id="registerMessage"></div>
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="bi bi-person-plus"></i> 注册
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 已登录状态 -->
+                <div id="loggedInSection" style="display: none;">
+                    <div class="status-panel">
+                        <div class="user-info">
+                            <div class="user-avatar">
+                                <i class="bi bi-person"></i>
+                            </div>
+                            <div>
+                                <h4 id="displayUsername">用户名</h4>
+                                <p class="text-muted mb-0">ID: <span id="displayUserId">-</span></p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="feature-list">
+                        <h5><i class="bi bi-info-circle"></i> 会话信息</h5>
+                        <div class="status-panel">
+                            <p><strong>Token:</strong> <code id="displayToken">-</code></p>
+                            <p><strong>状态:</strong> <span class="badge bg-success">已登录</span></p>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2 mt-4">
+                        <button class="btn btn-outline-primary" onclick="verifySession()">
+                            <i class="bi bi-shield-check"></i> 验证会话
+                        </button>
+                        <button class="btn btn-danger" onclick="logout()">
+                            <i class="bi bi-box-arrow-right"></i> 登出
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- API 日志 -->
+                <div class="mt-4">
+                    <h5><i class="bi bi-terminal"></i> API 请求日志</h5>
+                    <div class="api-log" id="apiLog">
+                        <div class="info">// 系统就绪，等待操作...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 功能说明 -->
+        <div class="card mt-4">
+            <div class="card-body">
+                <h5><i class="bi bi-list-check"></i> 系统功能</h5>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="feature-item">
+                            <i class="bi bi-check-circle-fill"></i>
+                            <span>用户注册（密码 bcrypt 加密）</span>
+                        </div>
+                        <div class="feature-item">
+                            <i class="bi bi-check-circle-fill"></i>
+                            <span>用户登录（失败次数限制）</span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="feature-item">
+                            <i class="bi bi-check-circle-fill"></i>
+                            <span>会话管理（Redis 存储）</span>
+                        </div>
+                        <div class="feature-item">
+                            <i class="bi bi-check-circle-fill"></i>
+                            <span>用户登出（会话销毁）</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const API_BASE = '/api';
+        let currentToken = localStorage.getItem('token') || null;
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            if (currentToken) {
+                verifySession(true);
+            }
+            
+            // 密码强度验证
+            document.getElementById('regPassword').addEventListener('input', function(e) {
+                const password = e.target.value;
+                updatePasswordRequirements(password);
+            });
+        });
+        
+        // 更新密码要求显示
+        function updatePasswordRequirements(password) {
+            const requirements = {
+                'req-length': password.length >= 8,
+                'req-lower': /[a-z]/.test(password),
+                'req-upper': /[A-Z]/.test(password),
+                'req-number': /\d/.test(password)
+            };
+            
+            for (const [id, met] of Object.entries(requirements)) {
+                const el = document.getElementById(id);
+                if (met) {
+                    el.classList.add('requirement-met');
+                    el.classList.remove('requirement-not-met');
+                } else {
+                    el.classList.remove('requirement-met');
+                    el.classList.add('requirement-not-met');
+                }
+            }
+        }
+        
+        // 添加日志
+        function addLog(message, type = 'info') {
+            const log = document.getElementById('apiLog');
+            const timestamp = new Date().toLocaleTimeString();
+            log.innerHTML += `<div><span class="timestamp">[${timestamp}]</span> <span class="${type}">${message}</span></div>`;
+            log.scrollTop = log.scrollHeight;
+        }
+        
+        // 显示消息
+        function showMessage(elementId, message, isSuccess) {
+            const el = document.getElementById(elementId);
+            el.innerHTML = `<div class="alert alert-${isSuccess ? 'success' : 'danger'}">${message}</div>`;
+        }
+        
+        // 注册
+        document.getElementById('registerForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('regUsername').value;
+            const password = document.getElementById('regPassword').value;
+            const email = document.getElementById('regEmail').value;
+            
+            addLog(`POST /api/register - 注册用户: ${username}`, 'info');
+            
+            try {
+                const response = await fetch(`${API_BASE}/register`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({username, password, email: email || null})
+                });
+                
+                const data = await response.json();
+                addLog(`响应: ${JSON.stringify(data)}`, data.success ? 'success' : 'error');
+                showMessage('registerMessage', data.message, data.success);
+                
+                if (data.success) {
+                    document.getElementById('regUsername').value = '';
+                    document.getElementById('regPassword').value = '';
+                    document.getElementById('regEmail').value = '';
+                    // 切换到登录标签
+                    document.querySelector('[data-bs-target="#login"]').click();
+                }
+            } catch (error) {
+                addLog(`错误: ${error.message}`, 'error');
+                showMessage('registerMessage', '请求失败: ' + error.message, false);
+            }
+        });
+        
+        // 登录
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('loginUsername').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            addLog(`POST /api/login - 登录用户: ${username}`, 'info');
+            
+            try {
+                const response = await fetch(`${API_BASE}/login`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({username, password})
+                });
+                
+                const data = await response.json();
+                addLog(`响应: ${JSON.stringify(data)}`, data.success ? 'success' : 'error');
+                
+                if (data.success) {
+                    currentToken = data.data.token;
+                    localStorage.setItem('token', currentToken);
+                    showMessage('loginMessage', data.message, true);
+                    
+                    // 更新界面
+                    document.getElementById('displayUsername').textContent = data.data.username;
+                    document.getElementById('displayUserId').textContent = data.data.user_id;
+                    document.getElementById('displayToken').textContent = currentToken.substring(0, 20) + '...';
+                    
+                    document.getElementById('authSection').style.display = 'none';
+                    document.getElementById('loggedInSection').style.display = 'block';
+                } else {
+                    showMessage('loginMessage', data.message, false);
+                }
+            } catch (error) {
+                addLog(`错误: ${error.message}`, 'error');
+                showMessage('loginMessage', '请求失败: ' + error.message, false);
+            }
+        });
+        
+        // 验证会话
+        async function verifySession(silent = false) {
+            if (!currentToken) {
+                if (!silent) addLog('错误: 未找到Token', 'error');
+                return;
+            }
+            
+            addLog('GET /api/verify - 验证会话', 'info');
+            
+            try {
+                const response = await fetch(`${API_BASE}/verify`, {
+                    headers: {'Authorization': `Bearer ${currentToken}`}
+                });
+                
+                const data = await response.json();
+                addLog(`响应: ${JSON.stringify(data)}`, data.success ? 'success' : 'error');
+                
+                if (data.success) {
+                    document.getElementById('displayUsername').textContent = data.data.username;
+                    document.getElementById('displayUserId').textContent = data.data.user_id;
+                    
+                    document.getElementById('authSection').style.display = 'none';
+                    document.getElementById('loggedInSection').style.display = 'block';
+                } else {
+                    if (!silent) {
+                        localStorage.removeItem('token');
+                        currentToken = null;
+                        document.getElementById('authSection').style.display = 'block';
+                        document.getElementById('loggedInSection').style.display = 'none';
+                    }
+                }
+            } catch (error) {
+                addLog(`错误: ${error.message}`, 'error');
+            }
+        }
+        
+        // 登出
+        async function logout() {
+            if (!currentToken) {
+                addLog('错误: 未找到Token', 'error');
+                return;
+            }
+            
+            addLog('POST /api/logout - 登出', 'info');
+            
+            try {
+                const response = await fetch(`${API_BASE}/logout`, {
+                    method: 'POST',
+                    headers: {'Authorization': `Bearer ${currentToken}`}
+                });
+                
+                const data = await response.json();
+                addLog(`响应: ${JSON.stringify(data)}`, data.success ? 'success' : 'error');
+                
+                localStorage.removeItem('token');
+                currentToken = null;
+                
+                document.getElementById('authSection').style.display = 'block';
+                document.getElementById('loggedInSection').style.display = 'none';
+                document.getElementById('loginUsername').value = '';
+                document.getElementById('loginPassword').value = '';
+                document.getElementById('loginMessage').innerHTML = '';
+            } catch (error) {
+                addLog(`错误: ${error.message}`, 'error');
+            }
+        }
+    </script>
+</body>
+</html>
